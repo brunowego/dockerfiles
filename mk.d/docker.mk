@@ -3,13 +3,18 @@ SHELL := /bin/sh
 DOCKER_BUILD_OPTS ?=
 DOCKER_REPO := brunowego
 
-.PHONY: docker/build docker/push
-
+.PHONY: docker/build
 docker/build:
-	docker build $(DOCKER_BUILD_OPTS) \
+	@docker build $(DOCKER_BUILD_OPTS) \
 		-t $(DOCKER_REPO)/$(DOCKER_IMAGE):$(DOCKER_TAG) \
 		-t $(DOCKER_REPO)/$(DOCKER_IMAGE):latest .
+	@$(MAKE) docker/clean
 
+.PHONY: docker/push
 docker/push:
-	docker push $(DOCKER_REPO)/$(DOCKER_IMAGE):$(DOCKER_TAG)
-	docker push $(DOCKER_REPO)/$(DOCKER_IMAGE):latest
+	@docker push $(DOCKER_REPO)/$(DOCKER_IMAGE):$(DOCKER_TAG)
+	@docker push $(DOCKER_REPO)/$(DOCKER_IMAGE):latest
+
+.PHONY: docker/clean
+docker/clean:
+	@docker image prune -f
