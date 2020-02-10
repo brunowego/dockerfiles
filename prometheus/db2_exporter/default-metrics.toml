@@ -1,0 +1,39 @@
+[[metric]]
+context = "db_version"
+labels = [ "service_level" ]
+metricsdesc = { value = "DB2 version." }
+request = "SELECT SERVICE_LEVEL, 1 as value FROM SYSIBMADM.ENV_INST_INFO;"
+
+[[metric]]
+context = "db_name"
+labels = [ "server" ]
+metricsdesc = { value = "database name." }
+request = "select current server as server, 1 as value from sysibm.sysdummy1;"
+
+[[metric]]
+context = "tablespace"
+labels = [ "tablespace", "type", "page_size", "state" ]
+metricsdesc = { total_mb = "Tablespaces total space MB.", used_mb = "Tablespaces used space MB.", free_mb = "Tablespaces free space MB." }
+request = '''
+  SELECT substr(tbsp_name,1,20) as TABLESPACE,
+         substr(tbsp_content_type,1,10) as TYPE,
+         sum(tbsp_total_size_kb)/1024 as TOTAL_MB,
+         sum(tbsp_used_size_kb)/1024 as USED_MB,
+         sum(tbsp_free_size_kb)/1024 as FREE_MB,
+         substr(TBSP_STATE,1,10) as state,
+         tbsp_page_size AS PAGE_SIZE
+  FROM SYSIBMADM.TBSP_UTILIZATION
+  GROUP BY tbsp_name, tbsp_content_type,tbsp_page_size,TBSP_STATE;
+'''
+
+[[metric]]
+context = "bufferpool"
+labels = [ "bp_name"]
+metricsdesc = { total_hit_ratio = "DB2 bufferpools TOTAL_HIT_RATIO_PERCENT.", bp_size_mb = "DB2 bufferpools size MB.", idx_hit_ratio = "DB2 bufferpools INDEX_HIT_RATIO_PERCENT." }
+request = '''
+  SELECT SUBSTR(A.BP_NAME,1,20) AS bp_name,
+      A.TOTAL_HIT_RATIO_PERCENT AS total_hit_ratio,
+      A.INDEX_HIT_RATIO_PERCENT AS idx_hit_ratio,
+      (B.BP_CUR_BUFFSZ * c.PAGESIZE )/1048576 as BP_SIZE_MB
+  FROM SYSIBMADM.BP_HITRATIO A, SYSIBMADM.SNAPBP_PART B, syscat.bufferpools C  WHERE a.bp_name = b.bp_name and b.bp_name = c.bpname;
+'''

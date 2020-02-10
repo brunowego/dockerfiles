@@ -1,0 +1,9 @@
+SHELL := /bin/sh
+
+DB2_EXPORTER_VERSION := v0.2dev
+
+DOCKER_IMAGE := db2_exporter
+DOCKER_TAG := $(DB2_EXPORTER_VERSION)
+DOCKER_BUILD_OPTS += --build-arg DB2_EXPORTER_VERSION=$(DB2_EXPORTER_VERSION)
+
+-include ../../mk.d/docker.mk
